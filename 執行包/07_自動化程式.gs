@@ -165,8 +165,10 @@ function step1_buildForm() {
   form.setCollectEmail(false);
   form.setLimitOneResponsePerUser(false); // 不強迫登入 Google（避免卡死 LINE/Messenger 內建瀏覽器）
   form.setConfirmationMessage(
-    '投票完成，謝謝你！🎉\n得獎名單與票選結果將於 ' + CONFIG.ANNOUNCE_TEXT + ' 在我們的粉專公布——演出照片這幾天也會陸續放上去，來找找你的身影：\n👉 ' +
-    CONFIG.PAGE_URL + '\n（追蹤粉專＋按讚貼文，開獎才不會錯過！）'
+    '投票完成，謝謝你！🎉\n\n' +
+    '最後一步，只要 5 秒 👉 點這裡追蹤我們的粉專：\n' + CONFIG.PAGE_URL + '\n\n' +
+    '得獎名單、票選結果（' + CONFIG.ANNOUNCE_TEXT + '公布）、活動照片全都只在粉專——' +
+    '追蹤才不會錯過，也才看得到自己有沒有中獎！追完記得回貼文按個讚 👍'
   );
 
   const songChoices = CONFIG.SONGS.map(voteLabel_);
@@ -186,8 +188,10 @@ function step1_buildForm() {
   form.addCheckboxItem().setTitle(Q.PUBLISH_OK)
     .setChoiceValues(['我同意本團以暱稱引用我的聽後感刊登於粉絲專頁']);
   form.addMultipleChoiceItem().setTitle(Q.FOLLOW)
-    .setHelpText('粉專在這裡 → ' + CONFIG.PAGE_URL + ' （追蹤不是參加條件，也不影響中獎與領獎資格；領獎時若你願意，歡迎出示「追蹤中」畫面一起合影留念 😄）')
-    .setChoiceValues(['已經追蹤了！', '我這就去追蹤（先送出表單，送出後的感謝頁就有粉專連結，才不會漏填）', '還沒，先不用'])
+    .setHelpText('開獎名單、得獎結果、活動照片都只在粉專公布，追蹤才不會錯過。\n' +
+      '👉 還沒追蹤的，點這裡馬上去追蹤（會開新分頁，追完切回來繼續填就好）：\n' + CONFIG.PAGE_URL + '\n' +
+      '（追蹤不是參加條件，也不影響中獎與領獎資格；領獎時若你願意，歡迎出示「追蹤中」畫面合影 😄）')
+    .setChoiceValues(['已經追蹤了！', '剛剛點進去追蹤了！', '我這就去追蹤（送出後的感謝頁也有連結）', '還沒，先不用'])
     .setRequired(true);
   form.addTextItem().setTitle(Q.NEXT_EMAIL);
   form.addCheckboxItem().setTitle(Q.PDPA)
