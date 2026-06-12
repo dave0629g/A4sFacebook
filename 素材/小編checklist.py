@@ -81,15 +81,12 @@ st.markdown(f"""
 
 today = datetime.date.today()
 
-# session_state 從存檔初始化（避免覆蓋使用者剛點的）
+# 讀一次進度（這次 rerun 在點擊回呼存檔「之後」執行，所以已是最新）
 prog = progress_store.load()
 for t in all_tasks:
     k = f"cb_{t['id']}"
     if k not in st.session_state:
         st.session_state[k] = prog.get(t['id'], {}).get('done', False)
-
-# 點擊回呼已寫入存檔，這裡重讀一次，確保數字與「已完成時間」即時更新
-prog = progress_store.load()
 
 total = len(all_tasks)
 done = sum(1 for t in all_tasks if prog.get(t['id'], {}).get('done'))

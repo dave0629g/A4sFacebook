@@ -33,7 +33,8 @@
 | `狀態.md` | 自動產生的進度報告（含小編自報進度） | ❌ 否 |
 | `小編checklist.py` | 小編用的網頁待辦（Streamlit，大字可點） | ✅ 是 |
 | `小編任務.yaml` | 網頁的任務內容（改這裡網頁就更新） | ✅ 是 |
-| `progress_store.py` | 進度存取後端（本機 json／Google 試算表自動切換） | ✅ 是 |
+| `progress_store.py` | 進度存取後端（本機 json／Apps Script／服務帳號自動切換） | ✅ 是 |
+| `checklist_webapp.gs` | Apps Script 寫入口（雲端存進度用，不需服務帳號） | ✅ 是 |
 | `小編進度.json` | 本機模式的點擊紀錄（自動產生） | ❌ 否 |
 | `小編checklist_使用說明.md` | 網頁怎麼跑、怎麼給遠端小編開 | ✅ 是 |
 | `上線到StreamlitCloud教學.md` | 部署到 Streamlit Cloud＋Google 試算表存進度 | ✅ 是 |

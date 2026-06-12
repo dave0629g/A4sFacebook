@@ -57,9 +57,9 @@ cloudflared tunnel --url http://localhost:8501
 
 ### 3）部署到 Streamlit Community Cloud（小編隨時可開，固定網址）⭐
 
-程式已內建：部署上雲、設好 Google 試算表 secrets 後，**點擊會自動存進你的 Google 試算表**（耐重啟、你和 Claude 都讀得到）。Main file path 填 **`streamlit_app.py`**。
-完整一步步教學（建試算表、服務帳號、設 secrets、部署）見 **`素材/上線到StreamlitCloud教學.md`**。
-網頁左下角會顯示「進度存放：Google 試算表（雲端）」代表接通成功；若顯示「本機檔」就是 secrets 還沒設好。
+已上線：**https://a4sfacebook.streamlit.app/**（Main file path＝`streamlit_app.py`）。
+要讓點擊存進 Google 試算表（耐重啟、你和 Claude 都讀得到），用 **Apps Script 寫入口（不用服務帳號）**：貼一段 `素材/checklist_webapp.gs`、部署成網頁應用程式、把網址與 token 填進 Streamlit Secrets。一步步見 **`素材/上線到StreamlitCloud教學.md`**。
+網頁左下角顯示「進度存放：Google 試算表（Apps Script）」代表接通成功；顯示「本機檔」就是 secrets 還沒設好。
 
 ## 進度怎麼流回來
 

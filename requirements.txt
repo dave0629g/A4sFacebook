@@ -1,6 +1,8 @@
 # Streamlit Community Cloud 會用這份（repo 根目錄）裝套件。
-# 只列網頁需要的；本機完整工具（含 pillow）見 素材/requirements.txt。
+# 方案 B（Apps Script 寫入口）只需這兩個；HTTP 用 Python 內建 urllib，免額外套件。
 streamlit>=1.30
 pyyaml>=6
-gspread>=6
-google-auth>=2
+
+# 若改用方案 A（服務帳號直連試算表），再取消下面兩行的註解：
+# gspread>=6
+# google-auth>=2
