@@ -34,7 +34,17 @@ INBOX = os.path.join(ROOT, '收件匣')
 ACTUAL = os.path.join(ROOT, '實品')
 OUT = os.path.join(ROOT, '成品')
 STATUS = os.path.join(ROOT, '狀態.md')
-PHOTO_ROOT = os.path.expanduser('~/A4s音樂會素材原圖')
+
+# 照片原圖來源：repo 外或「其他 repo」的工作目錄。本程式只「讀取清點」，永不複製進本 repo。
+# LINE 相簿目前就放在 A4s repo 的 Line相簿/（該 repo 已把它 gitignore，不會被推出去）。
+# 要新增/改路徑就改這個清單；不存在的路徑會自動跳過。
+PHOTO_SOURCES = [
+    '/Users/dave0629/Projects/A4s/Line相簿/20260606 小芭',
+    '/Users/dave0629/Projects/A4s/Line相簿/20260610 綵排+演出',
+    os.path.expanduser('~/A4s音樂會素材原圖/第一波_演出謝幕'),
+    os.path.expanduser('~/A4s音樂會素材原圖/第二波_彩排幕後觀眾席'),
+    os.path.expanduser('~/A4s音樂會素材原圖/其他'),
+]
 
 TODAY = datetime.date.today()
 YEAR = 2026
@@ -211,6 +221,11 @@ def actual_images(sub):
     return count_images(os.path.join(ACTUAL, sub))
 
 
+def total_source_images():
+    """所有原圖來源的照片總數（第一波/第二波由人工審片分配，這裡只看『有沒有原圖可用』）。"""
+    return sum(count_images(p) for p in PHOTO_SOURCES)
+
+
 # ════════════════════════════════════════════════════════════════
 #  ④ 狀態判定
 # ════════════════════════════════════════════════════════════════
@@ -222,8 +237,9 @@ def build_manifest(d):
     def flag(path):
         return lambda: g(d, path, False) is True
 
-    def photos(sub, ext_subdir, n=1):
-        return lambda: (actual_images(sub) + count_images(os.path.join(PHOTO_ROOT, ext_subdir))) >= n
+    def photos(sub, n=1):
+        # 原圖到位＝任一來源有照片（哪些進第一/二波是審片時人工決定，不在這裡分）
+        return lambda: (actual_images(sub) + total_source_images()) >= n
 
     def files(sub, n=1):
         # 計任意檔案：證明類常是 PDF，截圖/圖卡是影像，一律算「檔案到了沒」
@@ -253,13 +269,13 @@ def build_manifest(d):
         ((6, 13), '6/13 開跑前', '訊息 0/1/2 已依序貼群組', flag('完成.訊息012已依序貼團員群組'), '含開場公告訊息0'),
 
         ((6, 15), '6/14–15 第一波', '第一波照片已審片', flag('完成.第一波照片已審片'), '6/14 送審24h'),
-        ((6, 15), '6/14–15 第一波', '第一波照片（原圖）', photos('03_第一波照片', '第一波_演出謝幕', 1), 'LINE相簿存本機原圖夾'),
+        ((6, 15), '6/14–15 第一波', '第一波照片（原圖）', photos('03_第一波照片', 1), '原圖來源見狀態末段'),
         ((6, 15), '6/14–15 第一波', '第一波相簿＋貼文1連結', lambda: filled(g(d, '連結.第一波相簿')) and filled(g(d, '連結.貼文1')), ''),
 
         ((6, 18), '6/18 戰報', '各團員已填名單已個別私訊', flag('完成.各團員已填名單已個別私訊_0618'), ''),
 
         ((6, 20), '6/20–21 第二波', '第二波照片已審片', flag('完成.第二波照片已審片'), '6/20 送審留24h'),
-        ((6, 21), '6/20–21 第二波', '第二波照片（原圖）', photos('04_第二波照片', '第二波_彩排幕後觀眾席', 1), ''),
+        ((6, 21), '6/20–21 第二波', '第二波照片（原圖）', photos('04_第二波照片', 1), ''),
         ((6, 21), '6/20–21 第二波', '第二波相簿＋貼文2.5連結', lambda: filled(g(d, '連結.第二波相簿')) and filled(g(d, '連結.貼文2_5')), ''),
 
         ((6, 26), '6/26 抽獎', '排除名單已填', flag('完成.排除名單已填'), '先填再按④'),
@@ -356,13 +372,22 @@ def write_status(d, rendered, moved):
         for name, sub in moved:
             lines.append(f'- {name} → 實品/{sub}/')
 
-    # 本機原圖清點
-    p1 = count_images(os.path.join(PHOTO_ROOT, '第一波_演出謝幕'))
-    p2 = count_images(os.path.join(PHOTO_ROOT, '第二波_彩排幕後觀眾席'))
-    lines += ['', '## 本機原圖資料夾（不進 git）',
-              f'- `~/A4s音樂會素材原圖/第一波_演出謝幕/`：{p1} 張',
-              f'- `~/A4s音樂會素材原圖/第二波_彩排幕後觀眾席/`：{p2} 張',
-              '', '---', '*改值請編輯 `素材/提供資料.yaml` 後重跑 `python3 素材/update.py`。*']
+    # 原圖來源清點（只讀取、不進 git）
+    lines += ['', '## 原圖來源（只清點，不進 git）']
+    total = 0
+    any_src = False
+    for p in PHOTO_SOURCES:
+        if os.path.isdir(p):
+            c = count_images(p)
+            total += c
+            any_src = True
+            short = p.replace(os.path.expanduser('~'), '~')
+            lines.append(f'- `{short}`：{c} 張')
+    if not any_src:
+        lines.append('- （尚無來源資料夾；照片放 A4s/Line相簿/ 或 ~/A4s音樂會素材原圖/）')
+    else:
+        lines.append(f'- **合計 {total} 張**（哪些進第一/二波，於審片時人工挑選）')
+    lines += ['', '---', '*改值請編輯 `素材/提供資料.yaml` 後重跑 `python3 素材/update.py`。*']
 
     open(STATUS, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     return done_n, len(rows), next_dl
