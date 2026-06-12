@@ -301,6 +301,38 @@ def build_manifest(d):
     return M
 
 
+def editor_progress_lines():
+    """讀小編 checklist 網頁的自報進度（素材/小編進度.json），整理成狀態段落。"""
+    tasks_f = os.path.join(ROOT, '小編任務.yaml')
+    prog_f = os.path.join(ROOT, '小編進度.json')
+    if not os.path.exists(tasks_f):
+        return []
+    try:
+        phases = (yaml.safe_load(open(tasks_f, encoding='utf-8')) or {}).get('階段', [])
+    except Exception:
+        return []
+    prog = {}
+    if os.path.exists(prog_f):
+        try:
+            import json
+            prog = json.load(open(prog_f, encoding='utf-8'))
+        except Exception:
+            prog = {}
+    allt = [t for ph in phases for t in ph['任務']]
+    done = [t for t in allt if prog.get(t['id'], {}).get('done')]
+    out = ['', '## 小編自報進度（checklist 網頁）',
+           f'- 已點完 **{len(done)}／{len(allt)}** 項']
+    # 最近完成：依時間戳排序取最後 5 筆（ts 格式 MM/DD HH:MM，不跨年用字串序即可）
+    recent = sorted((prog[t['id']].get('ts', ''), t['做']) for t in done if prog.get(t['id'], {}).get('ts'))
+    if recent:
+        out.append('- 最近完成：')
+        for ts, desc in recent[-5:]:
+            out.append(f'    - {ts}　{desc}')
+    if not os.path.exists(prog_f):
+        out.append('- （小編還沒開過 checklist 網頁，或還沒點任何項目）')
+    return out
+
+
 def status_icon(done, deadline):
     dl = datetime.date(YEAR, *deadline)
     if done:
@@ -387,6 +419,8 @@ def write_status(d, rendered, moved):
         lines.append('- （尚無來源資料夾；照片放 A4s/Line相簿/ 或 ~/A4s音樂會素材原圖/）')
     else:
         lines.append(f'- **合計 {total} 張**（哪些進第一/二波，於審片時人工挑選）')
+
+    lines += editor_progress_lines()
     lines += ['', '---', '*改值請編輯 `素材/提供資料.yaml` 後重跑 `python3 素材/update.py`。*']
 
     open(STATUS, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
