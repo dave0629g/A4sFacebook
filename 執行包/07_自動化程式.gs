@@ -73,7 +73,7 @@ const CONFIG = {
   CLOSE_TEXT: '6/25（四）晚上 9:00',          // 對外顯示的截止文字（要跟 CLOSE_AT 一致）
   ANNOUNCE_TEXT: '6/27（六）晚上 8 點',       // 對外顯示的開獎文字
   // ⚠️ 時程整體平移時，CLOSE_AT、CLOSE_TEXT、ANNOUNCE_TEXT 三個要一起改
-  RULES_URL: '【辦法短網址】',                // 活動辦法 Google 文件短網址（先做 01 的步驟 0 才有得填）
+  RULES_URL: 'https://reurl.cc/2ad9zO',       // 活動辦法 Google 文件短網址
   PAGE_URL: 'https://www.facebook.com/a4ssingers',
   CONTACT_EMAIL: 'a4ssingers@gmail.com',
   WEIGHT_FIRST: 2,                           // 計分：第一喜歡
