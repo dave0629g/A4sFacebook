@@ -88,8 +88,13 @@ for t in all_tasks:
     if k not in st.session_state:
         st.session_state[k] = prog.get(t['id'], {}).get('done', False)
 
+def is_done(t):
+    # 搭檔已代為完成的，或小編自己在試算表裡勾過的，都算完成
+    return bool(t.get('搭檔完成')) or bool(prog.get(t['id'], {}).get('done'))
+
+
 total = len(all_tasks)
-done = sum(1 for t in all_tasks if prog.get(t['id'], {}).get('done'))
+done = sum(1 for t in all_tasks if is_done(t))
 
 st.title('✅ 小編任務清單')
 st.caption(f"今天 {today.month}/{today.day}　做完一項就點方框，會自動記錄")
@@ -97,7 +102,7 @@ st.progress(done / total if total else 0)
 st.markdown(f"### 進度 {done} / {total}")
 
 pending_phases = [ph for ph in phases
-                  if any(not prog.get(t['id'], {}).get('done') for t in ph['任務'])]
+                  if any(not is_done(t) for t in ph['任務'])]
 upcoming = sorted([ph for ph in pending_phases if d(ph['迄']) >= today], key=lambda p: d(p['起']))
 overdue = sorted([ph for ph in pending_phases if d(ph['迄']) < today], key=lambda p: d(p['起']))
 if overdue:
@@ -112,26 +117,31 @@ else:
 
 def render_task(t):
     tid = t['id']
+    if t.get('搭檔完成'):
+        st.checkbox(t['做'], value=True, disabled=True, key=f'done_{tid}')
+        st.markdown("<div class='donetime'>✅ 搭檔已經幫你做好了</div>", unsafe_allow_html=True)
+        return
     st.checkbox(t['做'], key=f'cb_{tid}', on_change=toggle, args=(tid,))
-    rec = prog.get(tid, {})
     if t.get('為什麼'):
         st.markdown(f"<div class='why'>↳ {t['為什麼']}</div>", unsafe_allow_html=True)
     if t.get('交件'):
         st.markdown(f"<div class='give'>📤 {t['交件']}</div>", unsafe_allow_html=True)
+    rec = prog.get(tid, {})
     if rec.get('done') and rec.get('ts'):
         st.markdown(f"<div class='donetime'>✔ 已完成 {rec['ts']}</div>", unsafe_allow_html=True)
 
 
-# 今天 / 逾期未完成 置頂
+# 今天 / 逾期未完成 置頂（已完成的——含搭檔代做——不列入）
 st.markdown('---')
 hot = []
 for ph in phases:
     is_today = d(ph['起']) <= today <= d(ph['迄'])
     is_overdue = d(ph['迄']) < today
     for t in ph['任務']:
-        undone = not prog.get(t['id'], {}).get('done')
-        if is_today or (is_overdue and undone):
-            hot.append((ph, t, is_overdue and undone))
+        if is_done(t):
+            continue
+        if is_today or is_overdue:
+            hot.append((ph, t, is_overdue))
 
 shown_ids = set()
 if hot:
@@ -149,7 +159,7 @@ st.markdown('---')
 st.header('全部任務')
 for ph in phases:
     is_today = d(ph['起']) <= today <= d(ph['迄'])
-    ph_done = sum(1 for t in ph['任務'] if prog.get(t['id'], {}).get('done'))
+    ph_done = sum(1 for t in ph['任務'] if is_done(t))
     ph_total = len(ph['任務'])
     mark = '✅' if ph_done == ph_total else ('🔴' if ph.get('急迫') else '')
     label = f"{mark} {ph['標題']}　（{ph_done}/{ph_total}）"
