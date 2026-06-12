@@ -29,13 +29,16 @@ def load_tasks():
         return (yaml.safe_load(f) or {}).get('階段', [])
 
 
+TZ8 = datetime.timezone(datetime.timedelta(hours=8))   # 台灣時間（雲端伺服器是 UTC，要校正）
+
+
 def d(mmdd):
     m, day = mmdd.split('-')
     return datetime.date(YEAR, int(m), int(day))
 
 
 def now_str():
-    return datetime.datetime.now().strftime('%m/%d %H:%M')
+    return datetime.datetime.now(TZ8).strftime('%m/%d %H:%M')
 
 
 phases = load_tasks()
@@ -79,7 +82,7 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-today = datetime.date.today()
+today = datetime.datetime.now(TZ8).date()   # 台灣日期（伺服器 UTC，跨午夜才不會算錯今天）
 
 # 讀一次進度（這次 rerun 在點擊回呼存檔「之後」執行，所以已是最新）
 prog = progress_store.load()
@@ -131,21 +134,22 @@ def render_task(t):
         st.markdown(f"<div class='donetime'>✔ 已完成 {rec['ts']}</div>", unsafe_allow_html=True)
 
 
-# 今天 / 逾期未完成 置頂（已完成的——含搭檔代做——不列入）
+# 今天置頂：今天的項目「全部」都列出（含已勾的，方便勾錯了在這裡直接取消）；
+# 逾期則只列「還沒做完」的，避免被過去已完成的洗版。
 st.markdown('---')
 hot = []
 for ph in phases:
     is_today = d(ph['起']) <= today <= d(ph['迄'])
     is_overdue = d(ph['迄']) < today
     for t in ph['任務']:
-        if is_done(t):
-            continue
-        if is_today or is_overdue:
-            hot.append((ph, t, is_overdue))
+        done_now = is_done(t)
+        if is_today or (is_overdue and not done_now):
+            hot.append((ph, t, is_overdue and not done_now))
 
 shown_ids = set()
 if hot:
-    st.header('🔴 現在該做的')
+    st.header('📋 今天要做的')
+    st.caption('勾完會留著、不會消失；如果勾錯了，再點一次方框就能取消。')
     for ph, t, od in hot:
         if od:
             st.caption(f"（逾期・{ph['標題']}）")

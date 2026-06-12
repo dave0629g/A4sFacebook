@@ -10,8 +10,11 @@
 """
 import os
 import json
+import datetime
 import urllib.request
 import urllib.parse
+
+TZ8 = datetime.timezone(datetime.timedelta(hours=8))   # 台灣時間
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOCAL = os.path.join(HERE, '小編進度.json')
@@ -33,13 +36,27 @@ def _webapp():
         return None
 
 
+def _fmt_ts(ts):
+    """試算表可能把時間字串自動轉成 ISO 日期；統一轉回 MM/DD HH:MM（台灣時間）。"""
+    s = str(ts or '')
+    if 'T' in s:
+        try:
+            dt = datetime.datetime.fromisoformat(s.replace('Z', '+00:00'))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+            return dt.astimezone(TZ8).strftime('%m/%d %H:%M')
+        except Exception:
+            return s
+    return s
+
+
 def _webapp_load(url, token):
     full = url + ('&' if '?' in url else '?') + 'token=' + urllib.parse.quote(token)
     with urllib.request.urlopen(full, timeout=HTTP_TIMEOUT) as r:
         data = json.loads(r.read().decode('utf-8'))
     if not isinstance(data, dict) or 'error' in data:
         raise ValueError('webapp load error')
-    return {k: {'done': True, 'ts': (v or {}).get('ts', '')}
+    return {k: {'done': True, 'ts': _fmt_ts((v or {}).get('ts', ''))}
             for k, v in data.items() if isinstance(v, dict) and v.get('done')}
 
 
