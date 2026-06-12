@@ -37,6 +37,32 @@ const CONFIG = {
     '走找青春',
     '青春嶺',
   ],
+  // 曲目選項旁的「友善長者版」一句介紹（鍵要與 SONGS 一字不差；改文字不影響計票，因為讀票以曲名回推）
+  INTROS: {
+    'You Are the New Day 你是嶄新的一天': '天亮了，唱出對明天的盼望，溫暖又帶著力量',
+    'Come Again, Sweet Love 再來吧，甜蜜的愛正在邀請': '古老情歌，把思念唱得越來越熱切，動人又揪心',
+    'Lullaby, My Sweet Little Baby 睡吧，我親愛的小寶貝': '母親輕輕哄睡孩子的搖籃曲，溫柔裡藏著心疼',
+    'Il bianco e dolce cigno 銀白而優雅的天鵝': '白天鵝唱出最後一聲，把愛的甜蜜與不捨都唱進去',
+    'Fine Knacks for Ladies 給女士們的精緻小玩意': '像市集小販吆喝叫賣，旋律輕快熱鬧，聽了想跟著哼',
+    'Say, Love, If Ever Thou Didst Find 告訴我，愛神': '輕聲問問愛神：世上最完美的人，是不是就是妳',
+    'The Silver Swan 銀白天鵝': '天鵝一生沈默，臨走前才放聲一唱，美得讓人捨不得',
+    'Fair Phyllis I saw 我曾見美麗的菲莉絲': '牧羊人滿山找心愛姑娘，一唱一和，最後相擁，俏皮又甜蜜',
+    'Vincent 文森': '梵谷的故事，唱進那幅星空，溫柔又心疼',
+    'Yesterday Once More 昨日再現': '守著收音機等愛歌、跟著哼唱的青春，真是快樂時光',
+    '河邊春夢': '一個人在河邊，月亮圓了人沒圓，靜靜等著心上人',
+    '你是我所有的回憶': '下著雨的午後，那個人的身影還在心裡，怎麼也忘不了',
+    '聽泉': '山間泉水叮咚流不停，聽著心裡好清涼好舒服',
+    '橄欖樹': '別問我從哪裡來，為了夢裡那棵橄欖樹，四處流浪遠方',
+    '少年時代': '夏夜的煙火與星空，把人帶回那段回不去卻最美的青春',
+    '手紙～拝啓 十五の君へ': '未來的自己寫信給十五歲的你：別怕，慢慢走就好',
+    '島唄': '沖繩花海下的歌聲，唱出對家鄉的愛與對和平的盼',
+    '世界恬靜落來的時': '黃昏靜下來的時候，想起田埂小路，靜靜想著你（台語）',
+    '紅田嬰': '紅蜻蜓飛過田邊和教室窗外，想起年少的自己（台語）',
+    '糖ㄅㄅ': '蒲公英隨風飛，小孩在田裡等媽媽回家，純樸又溫暖（客語）',
+    '頭擺的妳': '翻開舊相簿，一句句「還記得」，想起年輕時喜歡的人（客語）',
+    '走找青春': '年輕時嫌東嫌西，現在才懂那時最美，一起去找回青春（台語）',
+    '青春嶺': '春暖花開蝴蝶飛，兩人相伴爬上青春嶺，甜蜜又輕快（台語）',
+  },
   MEMBERS: [                                 // 全體團員 39 位（第 3 題下拉選單用）
     // ⚠️ 個資去識別化：真實名單不放公開 repo。
     // 請開啟本機的「執行包/LOCAL_私密資料.md」（或向幹部索取），
@@ -58,9 +84,10 @@ const CONFIG = {
 
 // 題目標題（建表與讀取共用；改了會對不上資料，沒事別動）
 const Q = {
-  VOTE: '本場音樂會，你最喜歡的兩首曲子是？',
+  VOTE1: '你最喜歡的第一首？',
+  VOTE2: '你第二喜歡的一首？',
   NICK: '你的暱稱或 FB 顯示名稱',
-  INVITER: '邀請你來聽音樂會的團員是？',
+  INVITER: '您如何得知這場音樂會？',
   CONTACT: 'Email 或手機（僅用於中獎聯絡）',
   FEEDBACK: '想對我們說的話（選填）',
   PUBLISH_OK: '聽後感刊登同意（選填）',
@@ -71,6 +98,25 @@ const Q = {
 };
 const RANK1 = '第一喜歡';
 const RANK2 = '第二喜歡';
+
+// 曲目選項格式：「曲名 — 一句介紹」。建表與讀票共用，確保來回一致。
+function voteLabel_(song) {
+  const intro = CONFIG.INTROS && CONFIG.INTROS[song];
+  return intro ? (song + ' — ' + intro) : song;
+}
+// 把使用者選的選項文字回推成曲名（以「曲名 開頭」精準比對，不受介紹文字日後修改影響）
+function labelToSong_(label) {
+  label = String(label == null ? '' : label).trim();
+  if (!label) return null;
+  let best = null;
+  for (let i = 0; i < CONFIG.SONGS.length; i++) {
+    const s = CONFIG.SONGS[i];
+    if (label === s || label.indexOf(s + ' — ') === 0) {
+      if (!best || s.length > best.length) best = s;   // 取最長匹配，避免短曲名誤配
+    }
+  }
+  return best;
+}
 
 // ════════════ 選單 ════════════
 function onOpen() {
@@ -123,18 +169,17 @@ function step1_buildForm() {
     CONFIG.PAGE_URL + '\n（追蹤粉專＋按讚貼文，開獎才不會錯過！）'
   );
 
-  form.addGridItem().setTitle(Q.VOTE)
-    .setHelpText('曲目依節目單順序排列。請「恰好」勾選兩首：一首第一喜歡、一首第二喜歡。若只勾一首，將僅計入第一喜歡。未勾選任何曲目者無法參加抽獎。')
-    .setRows(CONFIG.SONGS).setColumns([RANK1, RANK2])
-    .setValidation(
-      FormApp.createGridValidation()
-        .setHelpText('每個名次只能選一首曲子')
-        .requireLimitOneResponsePerColumn()
-        .build()
-    );
+  const songChoices = CONFIG.SONGS.map(voteLabel_);
+  form.addMultipleChoiceItem().setTitle(Q.VOTE1)
+    .setHelpText('曲目依節目單順序排列，每首後面有一句小介紹幫你回想。選出你最喜歡的那一首。')
+    .setChoiceValues(songChoices).setRequired(true);
+  form.addMultipleChoiceItem().setTitle(Q.VOTE2)
+    .setHelpText('再選一首你第二喜歡的（請和第一首不同）。只想選一首也可以，這題留白即可。')
+    .setChoiceValues(songChoices);
   form.addTextItem().setTitle(Q.NICK).setHelpText('對獎與公布得獎名單用').setRequired(true);
   form.addListItem().setTitle(Q.INVITER)
-    .setChoiceValues(CONFIG.MEMBERS.concat(['我自己來的／從粉專看到'])).setRequired(true);
+    .setHelpText('若是某位團員邀請你來的，請選出是哪一位（我們會謝謝他）；自己看到粉專或從別處得知，請選最後兩項。')
+    .setChoiceValues(CONFIG.MEMBERS.concat(['我自己看到粉專／網路', '其他'])).setRequired(true);
   form.addTextItem().setTitle(Q.CONTACT).setRequired(true);
   form.addParagraphTextItem().setTitle(Q.FEEDBACK)
     .setHelpText('精彩的留言我們可能以暱稱引用刊登於粉專——同意刊登才需勾下一題。');
@@ -201,28 +246,18 @@ function readResponses_() {
     throw new Error('回覆表找不到欄位：「' + title + '」。表單題目可能被手動改過，請改回原文字再執行。');
   };
   const idx = {
+    vote1: col(Q.VOTE1), vote2: col(Q.VOTE2),
     nick: col(Q.NICK), inviter: col(Q.INVITER), contact: col(Q.CONTACT),
     feedback: col(Q.FEEDBACK), publishOk: col(Q.PUBLISH_OK), follow: col(Q.FOLLOW),
     email: col(Q.NEXT_EMAIL),
   };
-  const songCols = {};
-  CONFIG.SONGS.forEach(function (song) {
-    var h = Q.VOTE + ' [' + song + ']'; // 連動工作表方格題標頭固定格式：「題目 [列名]」，精確比對最安全
-    for (var i = 0; i < headers.length; i++) {
-      if (headers[i] === h) { songCols[song] = i; break; }
-    }
-  });
-  const missing = CONFIG.SONGS.filter(function (s) { return songCols[s] === undefined; });
-  if (missing.length) {
-    throw new Error('回覆表找不到這些曲目的欄位（建表後改過 CONFIG.SONGS 或表單題目？）：' + missing.join('、'));
-  }
   const rows = [];
   for (var r = 1; r < data.length; r++) {
     var votes = {};
-    Object.keys(songCols).forEach(function (song) {
-      var v = String(data[r][songCols[song]]).trim();
-      if (v === RANK1 || v === RANK2) votes[song] = v;
-    });
+    var s1 = labelToSong_(data[r][idx.vote1]);   // 第一喜歡選項 → 回推曲名
+    var s2 = labelToSong_(data[r][idx.vote2]);   // 第二喜歡
+    if (s1) votes[s1] = RANK1;
+    if (s2 && s2 !== s1) votes[s2] = RANK2;       // 同一首被選兩次：只計第一喜歡
     rows.push({
       ts: data[r][0],
       nick: String(data[r][idx.nick] || '').trim(),
