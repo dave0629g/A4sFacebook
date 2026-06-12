@@ -75,6 +75,8 @@ st.markdown(f"""
   h1 {{ font-size: {BASE + 14}px !important; }}
   h2, [data-testid="stHeading"] h2 {{ font-size: {BASE + 6}px !important; }}
   [data-testid="stExpander"] summary p {{ font-size: {BASE + 2}px !important; }}
+  .summary {{ background:#eef5ff; border-left:5px solid #5B7DB1; padding:.45rem .8rem;
+              margin:.1rem 0 .4rem 3rem; font-size:{BASE - 2}px; color:#23405e; border-radius:5px; }}
   .why  {{ color:#5f5f5f; font-size:{BASE - 4}px; margin: -.2rem 0 .2rem 3rem; }}
   .give {{ color:#0a7d3c; font-size:{BASE - 4}px; margin: -.05rem 0 .2rem 3rem; }}
   .donetime {{ color:#0a7d3c; font-size:{BASE - 5}px; margin: -.15rem 0 .35rem 3rem; }}
@@ -120,11 +122,17 @@ else:
 
 def render_task(t):
     tid = t['id']
-    if t.get('搭檔完成'):
+    locked = bool(t.get('搭檔完成'))
+    if locked:
         st.checkbox(t['做'], value=True, disabled=True, key=f'done_{tid}')
-        st.markdown("<div class='donetime'>✅ 搭檔已經幫你做好了</div>", unsafe_allow_html=True)
+    else:
+        st.checkbox(t['做'], key=f'cb_{tid}', on_change=toggle, args=(tid,))
+    # 完成摘要（數字/結果）顯示在 check 項下方
+    if t.get('完成摘要'):
+        st.markdown(f"<div class='summary'>📊 {t['完成摘要']}</div>", unsafe_allow_html=True)
+    if locked:
+        st.markdown(f"<div class='donetime'>✅ {t.get('完成註', '搭檔已經幫你做好了')}</div>", unsafe_allow_html=True)
         return
-    st.checkbox(t['做'], key=f'cb_{tid}', on_change=toggle, args=(tid,))
     if t.get('為什麼'):
         st.markdown(f"<div class='why'>↳ {t['為什麼']}</div>", unsafe_allow_html=True)
     if t.get('交件'):
