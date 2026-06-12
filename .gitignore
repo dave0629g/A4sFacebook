@@ -21,6 +21,10 @@
 素材/提供資料.yaml
 素材/小編進度.json
 
+# 金鑰／密鑰（絕不上傳）
+.streamlit/secrets.toml
+*service_account*.json
+
 # 系統檔與編輯器個人設定
 .DS_Store
 .claude/

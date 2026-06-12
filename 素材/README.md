@@ -33,9 +33,14 @@
 | `狀態.md` | 自動產生的進度報告（含小編自報進度） | ❌ 否 |
 | `小編checklist.py` | 小編用的網頁待辦（Streamlit，大字可點） | ✅ 是 |
 | `小編任務.yaml` | 網頁的任務內容（改這裡網頁就更新） | ✅ 是 |
-| `小編進度.json` | 小編的點擊紀錄（自動產生） | ❌ 否 |
+| `progress_store.py` | 進度存取後端（本機 json／Google 試算表自動切換） | ✅ 是 |
+| `小編進度.json` | 本機模式的點擊紀錄（自動產生） | ❌ 否 |
 | `小編checklist_使用說明.md` | 網頁怎麼跑、怎麼給遠端小編開 | ✅ 是 |
-| `requirements.txt` | 套件清單（streamlit/pyyaml/pillow） | ✅ 是 |
+| `上線到StreamlitCloud教學.md` | 部署到 Streamlit Cloud＋Google 試算表存進度 | ✅ 是 |
+| `requirements.txt`（本資料夾） | 本機完整工具套件（含 pillow 產佔位圖） | ✅ 是 |
+| `../streamlit_app.py` | Streamlit Cloud 部署進入點（根目錄） | ✅ 是 |
+| `../requirements.txt` | 雲端部署套件（streamlit/pyyaml/gspread/google-auth） | ✅ 是 |
+| `../.streamlit/secrets.toml.範例` | 雲端 secrets 範本（真值不進 git） | ✅ 是 |
 
 ## 小編 Checklist 網頁
 

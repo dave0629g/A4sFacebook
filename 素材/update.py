@@ -312,12 +312,16 @@ def editor_progress_lines():
     except Exception:
         return []
     prog = {}
-    if os.path.exists(prog_f):
-        try:
-            import json
-            prog = json.load(open(prog_f, encoding='utf-8'))
-        except Exception:
-            prog = {}
+    try:
+        import progress_store  # 與網頁共用：有設定就讀 Google 試算表，否則讀本機 json
+        prog = progress_store.load()
+    except Exception:
+        if os.path.exists(prog_f):
+            try:
+                import json
+                prog = json.load(open(prog_f, encoding='utf-8'))
+            except Exception:
+                prog = {}
     allt = [t for ph in phases for t in ph['任務']]
     done = [t for t in allt if prog.get(t['id'], {}).get('done')]
     out = ['', '## 小編自報進度（checklist 網頁）',
@@ -328,8 +332,8 @@ def editor_progress_lines():
         out.append('- 最近完成：')
         for ts, desc in recent[-5:]:
             out.append(f'    - {ts}　{desc}')
-    if not os.path.exists(prog_f):
-        out.append('- （小編還沒開過 checklist 網頁，或還沒點任何項目）')
+    if not done:
+        out.append('- （小編還沒點任何項目，或還沒開過 checklist 網頁）')
     return out
 
 

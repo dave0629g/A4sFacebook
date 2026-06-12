@@ -1,12 +1,15 @@
 # 小編 Checklist 網頁 — 使用說明
 
-一個給小編用的網頁待辦清單：**大字、高對比、可調字級、做完點一下方框就好**。每次點擊會即時存進 `素材/小編進度.json`，關掉網頁也不會掉；搭檔和 `update.py` 都讀得到。
+一個給小編用的網頁待辦清單：**大字、高對比、可調字級、做完點一下方框就好**。點擊會即時記錄、關掉網頁也不會掉；搭檔和 `update.py` 都讀得到。
+
+> 進度存哪裡會**自動切換**：本機自己跑 → 存 `素材/小編進度.json`；部署到 Streamlit Cloud → 存 **Google 試算表**（見下面做法 3）。網頁左下角會顯示目前用哪個。
 
 ## 它包含什麼
 
 - `小編任務.yaml`：任務內容（要改任務就改這份，網頁立刻更新）
 - `小編checklist.py`：Streamlit 網頁程式
-- `小編進度.json`：小編的點擊紀錄（自動產生，不進 git）
+- `progress_store.py`：進度存取（本機 json／Google 試算表自動切換）
+- `小編進度.json`：本機模式的點擊紀錄（自動產生，不進 git）
 
 ## 在自己電腦先跑起來
 
@@ -52,20 +55,23 @@ cloudflared tunnel --url http://localhost:8501
 
 跑起來後看終端機印的 `Network URL`（像 `http://172.20.10.2:8501`），同一個 Wi-Fi 下小編直接開那個就行。
 
-### 3）部署到 Streamlit Community Cloud（小編隨時可開，但要處理存檔）
+### 3）部署到 Streamlit Community Cloud（小編隨時可開，固定網址）⭐
 
-把 repo 連到 [share.streamlit.io](https://share.streamlit.io)、指定 `素材/小編checklist.py`。
-⚠️ 雲端的點擊存在雲端伺服器、重開會掉，**你和 Claude 也讀不到**。要讓進度回得來，得讓程式把進度寫回 GitHub 或寫進一個 Google 試算表——這要額外設定，需要的話再請 Claude 加。
+程式已內建：部署上雲、設好 Google 試算表 secrets 後，**點擊會自動存進你的 Google 試算表**（耐重啟、你和 Claude 都讀得到）。Main file path 填 **`streamlit_app.py`**。
+完整一步步教學（建試算表、服務帳號、設 secrets、部署）見 **`素材/上線到StreamlitCloud教學.md`**。
+網頁左下角會顯示「進度存放：Google 試算表（雲端）」代表接通成功；若顯示「本機檔」就是 secrets 還沒設好。
 
 ## 進度怎麼流回來
 
 ```
-小編在網頁點方框  →  寫入 素材/小編進度.json
+小編在網頁點方框  →  寫入 小編進度.json（本機）或 Google 試算表（雲端）
                       ↓
-你跑 python3 素材/update.py
+你跑 python3 素材/update.py（雲端模式需本機也放一份 secrets.toml）
                       ↓
 素材/狀態.md 多出「小編自報進度」段（已點完幾項、最近完成時間）
 ```
+
+雲端模式也可直接開 Google 試算表「進度」分頁看，或把連結貼給 Claude 讀。
 
 ## 注意
 
