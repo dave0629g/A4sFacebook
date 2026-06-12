@@ -1,0 +1,12 @@
+# 個資與私密資料（絕不上傳）
+執行包/LOCAL_私密資料.md
+*.jpg
+*.jpeg
+*.png
+*.zip
+
+# 系統檔與編輯器個人設定
+.DS_Store
+.claude/
+.obsidian/
+.Rhistory
