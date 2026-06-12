@@ -52,7 +52,7 @@ const CONFIG = {
   CONTACT_EMAIL: 'a4ssingers@gmail.com',
   WEIGHT_FIRST: 2,                           // 計分：第一喜歡
   WEIGHT_SECOND: 1,                          // 計分：第二喜歡
-  WINNERS: 3,                                // 正取
+  WINNERS: 5,                                // 正取
   BACKUPS: 2,                                // 備取
 };
 
@@ -96,7 +96,7 @@ function step1_buildForm() {
   }
   const desc =
     '謝謝你來聽我們的音樂會！邀請你花 1 分鐘，選出本場你最喜歡的兩首曲子——得票最高的曲子，將列入我們下次演出的安可候選曲目。\n\n' +
-    '完成曲目票選並送出表單即可參加抽獎（曲目票選全空白者恕不具抽獎資格），我們將抽出 ' + CONFIG.WINNERS + ' 位，致贈「福爾摩沙不惑之聲」限量周邊（另抽備取 ' + CONFIG.BACKUPS + ' 位）。本團團員及其同住家屬可投票，但不參與抽獎。\n\n' +
+    '完成曲目票選並送出表單即可參加抽獎（曲目票選全空白者恕不具抽獎資格），我們將抽出 ' + CONFIG.WINNERS + ' 位幸運得主（另抽備取 ' + CONFIG.BACKUPS + ' 位），獎品每人擇一：A. 本團自得獎日起一年內任一場音樂會入場券一張；B. 福爾摩沙合唱團《30週年音樂會》紀念 USB 一個。本團團員及其同住家屬可投票，但不參與抽獎。\n\n' +
     '⏰ 截止：' + CONFIG.CLOSE_TEXT + '\n' +
     '🎁 開獎：' + CONFIG.ANNOUNCE_TEXT + ' 於本團粉絲專頁公布 → ' + CONFIG.PAGE_URL + '\n' +
     '📜 完整活動辦法：' + CONFIG.RULES_URL + '\n\n' +
@@ -112,7 +112,7 @@ function step1_buildForm() {
 
   // 2026/6/30 後 API 建立的表單預設「未發布」（Google 官方既定改版日），第二參數明確指定發布
   const form = FormApp.create(
-    '福爾摩沙不惑之聲' + CONFIG.CONCERT_NAME + '演後票選 × 福爾摩沙周邊抽獎',
+    '福爾摩沙不惑之聲' + CONFIG.CONCERT_NAME + '演後票選 × 好禮抽獎',
     /* isPublished= */ true
   );
   form.setDescription(desc);
